@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Mind Break Valet">
+  <title>استدعاء السيارة | Mind Break Cafe</title>
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Mind Break Valet","short_name":"استدعاء","start_url":".","display":"standalone","background_color":"#f4f4f5","theme_color":"#ffffff","icons":[{"src":"https://raw.githubusercontent.com/MindBreakOps/MBO-HumanResourceSystem/main/mind.png","sizes":"192x192","type":"image/png"}]}'>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #111827;
+      --navy-light: #1f2937;
+      --gold: #b48c41;
+      --gold-hover: #9a7635;
+      --bg: #f4f4f5;
+      --surface: #ffffff;
+      --text: #18181b;
+      --text-muted: #71717a;
+      --border: #e4e4e7;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-bg: #fffbeb;
+      --info: #3b82f6;
+      --info-bg: #eff6ff;
+      --font-ar: 'Cairo', sans-serif;
+      --font-en: 'Space Grotesk', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); font-family: var(--font-ar); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    .header { background: var(--surface); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .header-logo { display: flex; align-items: center; gap: 10px; }
+    .header-logo img { height: 32px; border-radius: 6px; }
+    .header-title { font-family: var(--font-en); font-weight: 800; font-size: 18px; color: var(--navy); letter-spacing: -0.5px; }
+    .container { padding: 24px 20px; max-width: 500px; margin: 0 auto; width: 100%; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+    .card { background: var(--surface); border-radius: 20px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border: 1px solid var(--border); }
+    .search-icon { color: var(--gold); margin-bottom: 16px; }
+    .search-title { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+    .search-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+    .input-group { position: relative; margin-bottom: 20px; }
+    .search-input { width: 100%; padding: 18px 20px; border-radius: 16px; border: 2px solid var(--border); font-size: 16px; font-family: inherit; text-align: right; outline: none; transition: all 0.3s ease; background: var(--bg); }
+    .search-input:focus { border-color: var(--gold); background: var(--surface); box-shadow: 0 0 0 4px rgba(180, 140, 65, 0.1); }
+    .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .ticket-no { font-family: var(--font-en); font-size: 14px; font-weight: 700; color: var(--text-muted); }
+    .btn-new-search { background: var(--bg); border: none; padding: 8px 12px; border-radius: 10px; font-family: var(--font-ar); font-size: 12px; font-weight: 700; color: var(--navy); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
+    .btn-new-search:hover { background: #e4e4e7; }
+    .plate-display { display: flex; justify-content: center; align-items: center; background: #ffffff; border: 2px solid var(--navy); border-radius: 8px; padding: 12px 24px; font-family: var(--font-en); font-size: 28px; font-weight: 800; letter-spacing: 3px; color: var(--navy); margin-bottom: 24px; position: relative; box-shadow: inset 0 0 0 2px #f4f4f5; }
+    .plate-display::after { content: 'KSA'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 8px; font-weight: 700; color: var(--navy); }
+    .status-badge { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 700; width: 100%; }
+    .status-parked { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .status-requested { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); animation: pulse 2s infinite; }
+    .status-returned { background: var(--info-bg); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.2); }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);} 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);} 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);} }
+    .payment-card { background: var(--navy); color: white; border: none; }
+    .payment-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+    .fee-display { font-family: var(--font-en); font-weight: 800; font-size: 24px; margin-bottom: 16px; display: block; }
+    .bank-box { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; }
+    .bank-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .bank-row:last-child { margin-bottom: 0; }
+    .bank-label { font-size: 13px; color: rgba(255,255,255,0.6); }
+    .bank-val { font-family: var(--font-en); font-size: 14px; font-weight: 700; }
+    .copy-btn { background: rgba(180, 140, 65, 0.15); border: none; color: var(--gold); border-radius: 6px; padding: 4px 10px; font-family: var(--font-ar); font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .copy-btn:hover { background: rgba(180, 140, 65, 0.3); }
+    .btn-primary { width: 100%; background: var(--gold); color: white; border: none; border-radius: 16px; padding: 18px; font-family: inherit; font-size: 18px; font-weight: 800; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; transform: none; }
+    .loader { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: currentColor; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-container { text-align: center; padding: 40px 20px; display: none; }
+    .loading-container .loader { width: 40px; height: 40px; border-width: 4px; border-top-color: var(--gold); color: var(--border); }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--navy); color: white; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 700; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .footer { text-align: center; padding: 30px 20px; font-size: 12px; color: var(--text-muted); font-family: var(--font-en); font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .footer-brand { display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .footer-brand img { height: 16px; border-radius: 4px; }
+    .footer b { color: var(--navy); font-weight: 800; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-logo">
+      <img src="https://raw.githubusercontent.com/MindBreakOps/MBO-HumanResourceSystem/main/mind.png" alt="Mind Break Logo">
+      <div class="header-title">Mind Break Cafe</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="sharePublicLink()" style="border:1px solid var(--border);background:var(--surface);padding:8px 10px;border-radius:12px;cursor:pointer;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:6px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"></path><path d="M16 6l-4-4-4 4"></path><path d="M12 2v13"></path></svg>
+        Share
+      </button>
+      <a href="mailto:operixsolution@gmail.com" style="font-size: 13px; font-weight: 700; color: var(--gold); text-decoration: none; display: flex; align-items: center; gap: 4px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        خدمة العملاء
+      </a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="loading-state" class="loading-container">
+      <div class="loader"></div>
+      <div style="margin-top: 16px; font-weight: 700; color: var(--navy); font-size: 18px;" id="loading-text">جاري البحث...</div>
+    </div>
+
+    <div id="search-state" class="card" style="display: none; padding: 32px 24px; text-align: center;">
+      <svg class="search-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M11.5 11.5L15 15"/>
+      </svg>
+      <h3 class="search-title">أهلاً بك</h3>
+      <p class="search-desc">للبدء، الرجاء إدخال <b>رقم التذكرة</b> المطبوع على الإيصال أو <b>رقم لوحة السيارة</b>.</p>
+      <div class="input-group">
+        <input type="text" id="search-input" class="search-input" placeholder="رقم التذكرة أو اللوحة (مثال: 1234)" onkeydown="if(event.key==='Enter') executeSearch()">
+      </div>
+      <button onclick="executeSearch()" class="btn-primary">
+        بحث عن سيارتي
+      </button>
+    </div>
+
+    <div id="content-state" style="display: none; flex-direction: column; gap: 16px;">
+      <div class="card">
+        <div class="ticket-header">
+          <div style="display:flex; flex-direction: column;">
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">رقم التذكرة</span>
+            <span id="display-ticket-no" class="ticket-no">---</span>
+          </div>
+          <button class="btn-new-search" onclick="resetSearch()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            بحث جديد
+          </button>
+        </div>
+
+        <div class="plate-display" id="display-plate">---</div>
+
+        <div id="display-status" class="status-badge status-parked">
+          <svg id="status-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="status-text">في المواقف (أمان)</span>
+        </div>
+      </div>
+
+      <div class="card payment-card" id="payment-section">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          تفاصيل الدفع
+        </h3>
+        <span style="font-size: 13px; color: rgba(255,255,255,0.7);">رسوم الخدمة</span>
+        <span class="fee-display" id="display-fee">19.00 SAR</span>
+
+        <div class="bank-box">
+          <div class="bank-row">
+            <span class="bank-label">المصرف</span>
+            <span class="bank-val" style="font-family: var(--font-ar);">مصرف الإنماء</span>
+          </div>
+          <div class="bank-row">
+            <span class="bank-label">رقم الحساب</span>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="bank-val">68207289745000</span>
+              <button class="copy-btn" onclick="copyText('68207289745000')">نسخ</button>
+            </div>
+          </div>
+          <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 12px 0;"></div>
+          <div class="bank-row" style="margin-bottom: 8px;">
+            <span class="bank-label">الآيبان (IBAN)</span>
+            <button class="copy-btn" onclick="copyText('SA6905000068207289745000')">نسخ</button>
+          </div>
+          <div class="bank-val" style="font-size: 13px; word-spacing: 2px; color: var(--gold);">SA69 0500 0068 2072 8974 5000</div>
+        </div>
+        <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 12px; text-align: center;">
+          الرجاء إتمام التحويل قبل استدعاء السيارة لتجنب التأخير.
+        </p>
+      </div>
+
+      <button id="btn-request" class="btn-primary" onclick="requestCar()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        <span id="btn-request-text">استدعاء سيارتي الآن</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">
+      Valet Service Powered by
+      <img src="https://raw.githubusercontent.com/MindBreakOps/LX-Permits/main/imind.png" alt="OPERIX Logo">
+      <b>OPERIX</b>
+    </div>
+    <div>© 2026</div>
+  </div>
+
+  <div id="toast" class="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    تم النسخ بنجاح
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      const swCode = `self.addEventListener('install', (e) => { self.skipWaiting(); }); self.addEventListener('fetch', (e) => {});`;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+    }
+  </script>
+
+  <script>
+    const SUPABASE_URL = 'https://lzobdqlbsxjlupyewdqq.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6b2JkcWxic3hqbHVweWV3ZHFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTY0MDQsImV4cCI6MjA4OTU3MjQwNH0.fH-bV3QiQUbk_6L-clwwdHlZTnTIYAIJeKysMhUlBIs';
+
+    async function sbFetch(path, opts={}) {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+        ...opts,
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON,
+          'Authorization': 'Bearer ' + SUPABASE_ANON,
+          'Prefer': 'return=representation',
+          ...(opts.headers||{})
+        }
+      });
+      if(!res.ok) throw new Error('Network Error');
+      const text = await res.text();
+      return text ? JSON.parse(text) : [];
+    }
+
+    let ticketData = null;
+    let pollInterval = null;
+
+    window.onload = () => {
+      showState('search');
+    };
+
+    function sharePublicLink(){
+      const url = `${window.location.origin}/costumer-app.html`;
+      try{
+        navigator.clipboard.writeText(url).then(() => alert('Public link copied:\n' + url)).catch(() => prompt('Copy public link:', url));
+      } catch {
+        prompt('Copy public link:', url);
+      }
+    }
+
+    function showState(state) {
+      document.getElementById('search-state').style.display = state === 'search' ? 'block' : 'none';
+      document.getElementById('loading-state').style.display = state === 'loading' ? 'block' : 'none';
+      document.getElementById('content-state').style.display = state === 'content' ? 'flex' : 'none';
+    }
+
+    function resetSearch() {
+      if(pollInterval) clearInterval(pollInterval);
+      ticketData = null;
+      document.getElementById('search-input').value = '';
+      showState('search');
+    }
+
+    function executeSearch(queryOverride) {
+      const input = queryOverride || document.getElementById('search-input').value.trim().toUpperCase();
+      if(!input) {
+        alert('الرجاء إدخال رقم التذكرة أو اللوحة.');
+        return;
+      }
+      showState('loading');
+      fetchData(input);
+    }
+
+    async function fetchData(searchQuery) {
+      try {
+        const qVal = encodeURIComponent(searchQuery.trim());
+        let rows = [];
+        rows = await sbFetch(`operix_invoices?op_id=eq.${qVal}&limit=1`, { method: 'GET' });
+        if (!Array.isArray(rows) || rows.length === 0) {
+          rows = await sbFetch(`operix_invoices?plate_num=eq.${qVal}&limit=1`, { method: 'GET' });
+        }
+        if (!Array.isArray(rows) || rows.length === 0) {
+          rows = await sbFetch(`operix_invoices?plate_num=ilike.*${qVal}*&limit=1`, { method: 'GET' });
+        }
+        if (Array.isArray(rows) && rows.length > 0) {
+          ticketData = rows[0];
+          updateUI();
+        } else {
+          document.getElementById('loading-state').innerHTML = `
+            <div style="color:var(--text-muted); font-weight:700; margin-bottom: 20px;">لم نتمكن من العثور على التذكرة أو اللوحة (${searchQuery})</div>
+            <button onclick="resetSearch()" class="btn-primary" style="padding: 12px 24px; width: auto; margin: 0 auto; background: var(--navy);">رجوع للبحث</button>
+          `;
+        }
+      } catch(e) {
+        document.getElementById('loading-state').innerHTML = `
+          <div style="color:var(--warning); font-weight:700; margin-bottom: 20px;">حدث خطأ في الاتصال بالخادم.</div>
+          <button onclick="location.reload()" class="btn-primary" style="padding: 12px 24px; width: auto; margin: 0 auto;">تحديث الصفحة</button>
+        `;
+      }
+    }
+
+    function updateUI() {
+      showState('content');
+      document.getElementById('display-ticket-no').innerText = ticketData.op_id || '---';
+      document.getElementById('display-plate').innerText = ticketData.plate_num || '---';
+      const statusBadge = document.getElementById('display-status');
+      const statusIcon = document.getElementById('status-icon');
+      const statusText = document.getElementById('status-text');
+      const btnRequest = document.getElementById('btn-request');
+      const paymentSection = document.getElementById('payment-section');
+      const amount = parseFloat(ticketData.amount) || 0;
+      if(ticketData.service_type === 'Free' || amount === 0) {
+        paymentSection.style.display = 'none';
+      } else {
+        paymentSection.style.display = 'block';
+        document.getElementById('display-fee').innerText = amount.toFixed(2) + ' SAR';
+      }
+      statusBadge.className = 'status-badge';
+      const currentStatus = ticketData.vehicle_status || 'Parked';
+      if (currentStatus === 'Parked') {
+        statusBadge.classList.add('status-parked');
+        statusIcon.innerHTML = '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>';
+        statusText.innerText = 'في المواقف (أمان)';
+        btnRequest.disabled = false;
+        btnRequest.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg><span>استدعاء سيارتي الآن</span>';
+        if(pollInterval) clearInterval(pollInterval);
+      } else if (currentStatus === 'Requested') {
+        statusBadge.classList.add('status-requested');
+        statusIcon.innerHTML = '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>';
+        statusText.innerText = 'جاري إحضار السيارة...';
+        btnRequest.disabled = true;
+        btnRequest.innerHTML = '<div class="loader" style="color:var(--text-muted);"></div><span>السيارة في الطريق إليك</span>';
+        startPolling();
+      } else if (currentStatus === 'Returned') {
+        statusBadge.classList.add('status-returned');
+        statusIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+        statusText.innerText = 'تم تسليم السيارة';
+        paymentSection.style.display = 'none';
+        btnRequest.disabled = true;
+        btnRequest.innerHTML = '<span>تم إغلاق التذكرة</span>';
+        if(pollInterval) clearInterval(pollInterval);
+      }
+    }
+
+    async function requestCar() {
+      const btn = document.getElementById('btn-request');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="loader" style="color:var(--text-muted);"></div><span>جاري إرسال الطلب...</span>';
+      try {
+        const now = new Date().toISOString();
+        await sbFetch(`operix_invoices?id=eq.${ticketData.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ vehicle_status: 'Requested', requested_at: now }),
+        });
+        ticketData.vehicle_status = 'Requested';
+        updateUI();
+      } catch(e) {
+        alert('حدث خطأ. يرجى المحاولة مرة أخرى.');
+        updateUI();
+      }
+    }
+
+    function startPolling() {
+      if(pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(async () => {
+        try {
+          const rows = await sbFetch(`operix_invoices?id=eq.${ticketData.id}&select=vehicle_status`, { method: 'GET' });
+          if (rows && rows.length > 0) {
+            const liveStatus = rows[0].vehicle_status;
+            if (liveStatus !== ticketData.vehicle_status) {
+              ticketData.vehicle_status = liveStatus;
+              updateUI();
+            }
+          }
+        } catch(e) {}
+      }, 5000);
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      });
+    }
+  </script>
+</body>
+</html>
