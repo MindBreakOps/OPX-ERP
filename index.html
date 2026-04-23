@@ -6157,6 +6157,71 @@ function showOTPError(msg) {
   if(el){ el.innerText = msg; el.style.display = 'block'; }
 }
 
+// ==========================================
+// RESTORED OTP UI FUNCTIONS
+// ==========================================
+
+function showOTPPage() {
+  // Clear previous inputs
+  for(var i = 0; i < 6; i++){
+	var el = document.getElementById('otp-' + i);
+	if(el){ el.value = ''; el.style.borderColor = 'var(--border2)'; }
+  }
+  
+  document.getElementById('otp-error').style.display = 'none';
+  document.getElementById('otp-btn').disabled = false;
+  document.getElementById('otp-btn').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Verify Code';
+  
+  // Unhide the OTP Page
+  document.getElementById('otp-page').classList.remove('hidden');
+  
+  // Focus the first input box automatically
+  setTimeout(function(){ 
+	var firstInput = document.getElementById('otp-0');
+	if(firstInput) firstInput.focus(); 
+  }, 100);
+  
+  // Start countdown timer — 5 minutes (300 seconds)
+  startOTPTimer(300);
+}
+
+function showOTPError(msg) {
+  var el = document.getElementById('otp-error');
+  if(el){ 
+	el.innerText = msg; 
+	el.style.display = 'block'; 
+  }
+}
+
+function startOTPTimer(seconds) {
+  if(window._otpTimerInterval) clearInterval(window._otpTimerInterval);
+  
+  var remaining = seconds;
+  var timerEl = document.getElementById('otp-timer');
+  var resendBtn = document.getElementById('otp-resend-btn');
+  
+  if(resendBtn) resendBtn.disabled = true;
+
+  function tick() {
+	if(!timerEl) return;
+	var m = Math.floor(remaining / 60);
+	var s = remaining % 60;
+	
+	timerEl.innerText = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+	timerEl.style.color = remaining <= 30 ? 'var(--red)' : 'var(--gold)';
+	
+	if(remaining <= 0){
+	  clearInterval(window._otpTimerInterval);
+	  timerEl.innerText = 'Expired';
+	  timerEl.style.color = 'var(--red)';
+	  if(resendBtn) resendBtn.disabled = false;
+	}
+	remaining--;
+  }
+  
+  tick(); // Run immediately once
+  window._otpTimerInterval = setInterval(tick, 1000);
+}
 async function resendOTP() {
   var acc = _pendingLoginData;
   if(!acc) { backToLogin(); return; }
